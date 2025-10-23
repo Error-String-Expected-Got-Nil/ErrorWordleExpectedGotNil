@@ -69,6 +69,10 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	switch args[0] {
 	case "test":
-		_, _ = s.ChannelMessageSend(m.ChannelID, "Test response")
+		test := EwegnSession{
+			RevealBoard: [6][5]byte{{revealedAbsent, revealedAbsent, revealedAbsent, revealedMaybe, revealedAbsent}},
+			GuessBoard:  [6][5]byte{{'c', 'r', 'a', 't', 'e'}},
+		}
+		_, _ = s.ChannelMessageSend(m.ChannelID, test.ToString())
 	}
 }
