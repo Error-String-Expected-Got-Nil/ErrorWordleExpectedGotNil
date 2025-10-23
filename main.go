@@ -17,14 +17,15 @@ const (
 	tokenFile = "token"
 	prefix    = "::"
 
-	helpMessage = "This is Error: Wordle Expected, Got Nil (EWEGN), a Wordle-clone Discord bot made as an excuse to learn the " +
-		"programming language Go.\n\n" +
+	helpMessage = "This is Error: Wordle Expected, Got Nil (EWEGN), a Wordle-clone Discord bot made as an excuse to " +
+		"learn the programming language Go.\n\n" +
 		"This bot uses `::` as a command prefix. Commands are:\n" +
 		"- `::help` Displays this message.\n" +
 		"- `::play` Starts a new game.\n" +
 		"- `::quit` Ends an active game.\n" +
 		"- `::guess <word>` Guess 'word' in your current game. Must be a 5-letter word of only 'a' to 'z'.\n" +
-		"- `::view` Prints your current game board."
+		"- `::view` Prints your current game board.\n" +
+		"- `::debug <word>` Starts a new game with the answer 'word', which must be exactly 5 letters from 'a' to 'z'."
 
 	validAnswersFile = "valid_answers.txt"
 	validGuessesFile = "valid_guesses.txt"
@@ -155,6 +156,34 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 		fmt.Printf("New game started by %s, answer is %s\n", m.Author.Username, session.Answer)
 
+	case "debug":
+		if len(args) < 2 {
+			send("Too few arguments.")
+			return
+		}
+
+		valid, reason := validateGuess(args[1])
+		if !valid {
+			send(reason)
+			return
+		}
+		answer := reason
+
+		if _, ok := Sessions[m.Author.ID]; ok {
+			send("You already have an active game.")
+			return
+		}
+
+		session := new(EwegnSession)
+		session.Owner = m.Author.ID
+		session.Answer = answer
+		Sessions[m.Author.ID] = session
+
+		send("New game started with answer `" + answer + "`")
+		send(session.ToString())
+
+		fmt.Printf("New debug game started by %s, answer is %s\n", m.Author.Username, answer)
+
 	case "quit":
 		session, ok := Sessions[m.Author.ID]
 		if !ok {
@@ -180,17 +209,12 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			return
 		}
 
-		guess := strings.ToLower(args[1])
-		if len(guess) != 5 {
-			send("Guess must be exactly 5 letters, got " + strconv.Itoa(len(guess)))
-			return
-		}
+		valid, reason := validateGuess(args[1])
+		guess := reason
 
-		for _, c := range guess {
-			if !(c >= 'a' && c <= 'z') {
-				send("Guess must only contain letters from 'a' to 'z'")
-				return
-			}
+		if !valid {
+			send(reason)
+			return
 		}
 
 		if _, ok := ValidWords[guess]; !ok {
@@ -232,4 +256,19 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	default:
 		send("Unrecognized command `" + args[0] + "`")
 	}
+}
+
+func validateGuess(guess string) (bool, string) {
+	guess = strings.ToLower(guess)
+	if len(guess) != 5 {
+		return false, "Guess must be exactly 5 letters, got " + strconv.Itoa(len(guess))
+	}
+
+	for _, c := range guess {
+		if !(c >= 'a' && c <= 'z') {
+			return false, "Guess must only contain letters from 'a' to 'z'"
+		}
+	}
+
+	return true, guess
 }
