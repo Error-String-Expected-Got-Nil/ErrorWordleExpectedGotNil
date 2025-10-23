@@ -6,6 +6,7 @@ import (
 	"math/rand/v2"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 
@@ -152,6 +153,8 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		send("New game started.")
 		send(session.ToString())
 
+		fmt.Printf("New game started by %s, answer is %s\n", m.Author.Username, session.Answer)
+
 	case "quit":
 		session, ok := Sessions[m.Author.ID]
 		if !ok {
@@ -159,7 +162,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			return
 		}
 
-		send("Your game has been ended. The answer was: `" + session.Answer + "`")
+		send("Your game has been ended. The answer was `" + session.Answer + "`")
 		delete(Sessions, m.Author.ID)
 
 	case "view":
@@ -170,6 +173,61 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 
 		send(session.ToString())
+
+	case "guess":
+		if len(args) < 2 {
+			send("Too few arguments.")
+			return
+		}
+
+		guess := strings.ToLower(args[1])
+		if len(guess) != 5 {
+			send("Guess must be exactly 5 letters, got " + strconv.Itoa(len(guess)))
+			return
+		}
+
+		for _, c := range guess {
+			if !(c >= 'a' && c <= 'z') {
+				send("Guess must only contain letters from 'a' to 'z'")
+				return
+			}
+		}
+
+		if _, ok := ValidWords[guess]; !ok {
+			send("`" + guess + "` is not a valid word.")
+			return
+		}
+
+		session, ok := Sessions[m.Author.ID]
+		if !ok {
+			send("You don't have an active game.")
+			return
+		}
+
+		correct := session.Guess(guess)
+		send(session.ToString())
+
+		gameOver := false
+		if correct {
+			// RoundNumber is incremented no matter what, so a correct guess on round 0 will have a RoundNumber of 1
+			if session.RoundNumber == 1 {
+				send("Wow, lucky guess! You got it right on the first try!")
+			} else {
+				send("Congratz, you successfully deduced the answer in " +
+					strconv.FormatUint(uint64(session.RoundNumber), 10) + " rounds!")
+			}
+
+			gameOver = true
+		} else {
+			if session.RoundNumber > 5 {
+				send("Game over! You've run out of guesses. The correct answer was `" + session.Answer + "`")
+				gameOver = true
+			}
+		}
+
+		if gameOver {
+			delete(Sessions, m.Author.ID)
+		}
 
 	default:
 		send("Unrecognized command `" + args[0] + "`")
