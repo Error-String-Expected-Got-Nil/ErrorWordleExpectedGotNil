@@ -17,6 +17,7 @@ const (
 
 func main() {
 
+	// Make sure the file with your token doesn't have a BOM.
 	data, err := os.ReadFile(tokenFile)
 	if err != nil {
 		fmt.Printf("Failed to read bot token: %s\n", err.Error())
@@ -32,7 +33,7 @@ func main() {
 	}
 
 	dg.AddHandler(onMessageCreate)
-	
+
 	dg.Identify.Intents = discordgo.IntentsGuildMessages
 
 	err = dg.Open()
