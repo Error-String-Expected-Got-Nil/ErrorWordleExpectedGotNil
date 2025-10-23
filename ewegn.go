@@ -82,6 +82,32 @@ const (
 	revealedPresent byte = iota
 )
 
+// Guess submits a guess to this EwegnSession, adding it to the RevealBoard and GuessBoard, and incrementing the
+// RoundNumber. The caller is expected to validate the input, which should be a string of precisely length 5 containing
+// only lowercase ASCII letters from 'a' to 'z'. Does not check that the guess is a valid guess string, the caller
+// should also do this itself. Returns true if the guess was correct, false otherwise (or if the RoundNumber was > 5).
+func (s *EwegnSession) Guess(guess string) bool {
+	if s.RoundNumber > 5 {
+		return false
+	}
+
+	for i := 0; i < 5; i++ {
+		if guess[i] == s.Answer[i] {
+			s.RevealBoard[s.RoundNumber][i] = revealedPresent
+		} else if strings.Contains(s.Answer, string(guess[i])) {
+			s.RevealBoard[s.RoundNumber][i] = revealedMaybe
+		} else {
+			s.RevealBoard[s.RoundNumber][i] = revealedAbsent
+		}
+
+		s.GuessBoard[s.RoundNumber][i] = guess[i]
+	}
+
+	s.RoundNumber++
+
+	return guess == s.Answer
+}
+
 func (s *EwegnSession) ToString() string {
 	str := strings.Builder{}
 
