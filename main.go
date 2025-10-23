@@ -3,6 +3,7 @@
 import (
 	"bufio"
 	"fmt"
+	"math/rand/v2"
 	"os"
 	"os/signal"
 	"strings"
@@ -14,6 +15,15 @@ import (
 const (
 	tokenFile = "token"
 	prefix    = "::"
+
+	helpMessage = "This is Error: Wordle Expected, Got Nil (EWEGN), a Wordle-clone Discord bot made as an excuse to learn the " +
+		"programming language Go.\n\n" +
+		"This bot uses `::` as a command prefix. Commands are:\n" +
+		"- `::help`: Displays this message.\n" +
+		"- `::play`: Starts a new game.\n" +
+		"- `::quit`: Ends an active game.\n" +
+		"- `::guess <word>`: Guess 'word' in your current game. Must be a 5-letter word of only 'a' to 'z'.\n" +
+		"- `::view`: Prints your current game board."
 
 	validAnswersFile = "valid_answers.txt"
 	validGuessesFile = "valid_guesses.txt"
@@ -115,12 +125,53 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	args := strings.Fields(strings.TrimPrefix(m.Content, prefix))
 
+	send := func(str string) {
+		_, _ = s.ChannelMessageSend(m.ChannelID, str)
+	}
+
 	if len(args) < 1 {
-		_, _ = s.ChannelMessageSend(m.ChannelID, "No command given.")
+		send("No command given.")
 		return
 	}
 
 	switch args[0] {
+	case "help":
+		send(helpMessage)
 
+	case "play":
+		if _, ok := Sessions[m.Author.ID]; ok {
+			send("You already have an active game.")
+			return
+		}
+
+		session := new(EwegnSession)
+		session.Owner = m.Author.ID
+		session.Answer = ValidAnswers[rand.IntN(len(ValidAnswers))]
+		Sessions[m.Author.ID] = session
+
+		send("New game started.")
+		send(session.ToString())
+
+	case "quit":
+		session, ok := Sessions[m.Author.ID]
+		if !ok {
+			send("You don't have an active game.")
+			return
+		}
+
+		send("Your game has been ended. The answer was: `" + session.Answer + "`")
+		delete(Sessions, m.Author.ID)
+
+	case "view":
+		session, ok := Sessions[m.Author.ID]
+		if !ok {
+			send("You don't have an active game.")
+			return
+		}
+
+		send(session.ToString())
+
+	default:
+		send("Unrecognized command `" + args[0] + "`")
 	}
 }
