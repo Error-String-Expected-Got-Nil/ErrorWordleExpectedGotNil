@@ -177,6 +177,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		session := new(EwegnSession)
 		session.Owner = m.Author.ID
 		session.Answer = answer
+		session.Debug = true
 		Sessions[m.Author.ID] = session
 
 		send("New game started with answer `" + answer + "`")
@@ -209,6 +210,12 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			return
 		}
 
+		session, ok := Sessions[m.Author.ID]
+		if !ok {
+			send("You don't have an active game.")
+			return
+		}
+
 		valid, reason := validateGuess(args[1])
 		if !valid {
 			send(reason)
@@ -216,14 +223,8 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 		guess := reason
 
-		if _, ok := ValidWords[guess]; !ok {
+		if _, ok = ValidWords[guess]; !session.Debug && !ok {
 			send("`" + guess + "` is not a valid word.")
-			return
-		}
-
-		session, ok := Sessions[m.Author.ID]
-		if !ok {
-			send("You don't have an active game.")
 			return
 		}
 

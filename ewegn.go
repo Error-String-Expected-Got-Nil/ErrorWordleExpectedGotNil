@@ -18,6 +18,7 @@ type EwegnSession struct {
 	GuessBoard  [6][5]byte // The letters guessed
 	RoundNumber byte       // The current round number (0 to 5)
 	Answer      string     // The correct answer for this session
+	Debug       bool       // True if this is a debug session
 }
 
 const (
@@ -111,6 +112,10 @@ func (s *EwegnSession) ToString() string {
 		}
 
 		str.WriteByte('\n')
+	}
+
+	if s.Debug {
+		str.WriteString("(Debug: Answer is " + s.Answer + ")\n")
 	}
 
 	return str.String()
