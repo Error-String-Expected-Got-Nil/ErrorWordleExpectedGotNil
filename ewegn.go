@@ -36,16 +36,38 @@ func (s *EwegnSession) Guess(guess string) bool {
 		return false
 	}
 
+	// Green guesses (and setting letters in the GuessBoard)
 	for i := 0; i < 5; i++ {
+		s.GuessBoard[s.RoundNumber][i] = guess[i]
+
 		if guess[i] == s.Answer[i] {
 			s.RevealBoard[s.RoundNumber][i] = revealedPresent
-		} else if strings.Contains(s.Answer, string(guess[i])) {
-			s.RevealBoard[s.RoundNumber][i] = revealedMaybe
-		} else {
-			s.RevealBoard[s.RoundNumber][i] = revealedAbsent
+		}
+	}
+
+	// Yellow guesses
+	for i := 0; i < 5; i++ {
+		if s.RevealBoard[s.RoundNumber][i] == revealedPresent {
+			continue
 		}
 
-		s.GuessBoard[s.RoundNumber][i] = guess[i]
+		for j := 0; j < 5; j++ {
+			if j == i {
+				continue
+			}
+
+			if guess[i] == s.Answer[j] && s.RevealBoard[s.RoundNumber][j] == revealedUnknown {
+				s.RevealBoard[s.RoundNumber][j] = revealedMaybe
+				break
+			}
+		}
+	}
+
+	// Absent guesses
+	for i := 0; i < 5; i++ {
+		if s.RevealBoard[s.RoundNumber][i] == revealedUnknown {
+			s.RevealBoard[s.RoundNumber][i] = revealedAbsent
+		}
 	}
 
 	s.RoundNumber++
