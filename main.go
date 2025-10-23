@@ -19,11 +19,11 @@ const (
 	helpMessage = "This is Error: Wordle Expected, Got Nil (EWEGN), a Wordle-clone Discord bot made as an excuse to learn the " +
 		"programming language Go.\n\n" +
 		"This bot uses `::` as a command prefix. Commands are:\n" +
-		"- `::help`: Displays this message.\n" +
-		"- `::play`: Starts a new game.\n" +
-		"- `::quit`: Ends an active game.\n" +
-		"- `::guess <word>`: Guess 'word' in your current game. Must be a 5-letter word of only 'a' to 'z'.\n" +
-		"- `::view`: Prints your current game board."
+		"- `::help` Displays this message.\n" +
+		"- `::play` Starts a new game.\n" +
+		"- `::quit` Ends an active game.\n" +
+		"- `::guess <word>` Guess 'word' in your current game. Must be a 5-letter word of only 'a' to 'z'.\n" +
+		"- `::view` Prints your current game board."
 
 	validAnswersFile = "valid_answers.txt"
 	validGuessesFile = "valid_guesses.txt"
