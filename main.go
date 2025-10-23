@@ -20,7 +20,7 @@ func main() {
 	// Make sure the file with your token doesn't have a BOM.
 	data, err := os.ReadFile(tokenFile)
 	if err != nil {
-		fmt.Printf("Failed to read bot token: %s\n", err.Error())
+		fmt.Println("Failed to read bot token:", err.Error())
 		return
 	}
 
@@ -28,7 +28,7 @@ func main() {
 
 	dg, err := discordgo.New("Bot " + token)
 	if err != nil {
-		fmt.Printf("Failed to initialize bot: %s\n", err.Error())
+		fmt.Println("Failed to initialize bot:", err.Error())
 		return
 	}
 
@@ -38,7 +38,7 @@ func main() {
 
 	err = dg.Open()
 	if err != nil {
-		fmt.Printf("Failed to open connection to Discord: %s\n", err.Error())
+		fmt.Println("Failed to open connection to Discord:", err.Error())
 		return
 	}
 
