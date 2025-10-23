@@ -57,7 +57,7 @@ func (s *EwegnSession) Guess(guess string) bool {
 			}
 
 			if guess[i] == s.Answer[j] && s.RevealBoard[s.RoundNumber][j] == revealedUnknown {
-				s.RevealBoard[s.RoundNumber][j] = revealedMaybe
+				s.RevealBoard[s.RoundNumber][i] = revealedMaybe
 				break
 			}
 		}
