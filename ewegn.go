@@ -37,12 +37,16 @@ func (s *EwegnSession) Guess(guess string) bool {
 		return false
 	}
 
+	// Indicates a letter in the answer has already been marked by a Present or Maybe
+	marked := [5]bool{}
+
 	// Green guesses (and setting letters in the GuessBoard)
 	for i := 0; i < 5; i++ {
 		s.GuessBoard[s.RoundNumber][i] = guess[i]
 
 		if guess[i] == s.Answer[i] {
 			s.RevealBoard[s.RoundNumber][i] = revealedPresent
+			marked[i] = true
 		}
 	}
 
@@ -57,8 +61,9 @@ func (s *EwegnSession) Guess(guess string) bool {
 				continue
 			}
 
-			if guess[i] == s.Answer[j] && s.RevealBoard[s.RoundNumber][i] == revealedUnknown {
+			if guess[i] == s.Answer[j] && !marked[j] {
 				s.RevealBoard[s.RoundNumber][i] = revealedMaybe
+				marked[j] = true
 				break
 			}
 		}
