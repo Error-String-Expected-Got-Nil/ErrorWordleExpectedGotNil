@@ -1,9 +1,6 @@
 ﻿package main
 
 import (
-	"bufio"
-	"fmt"
-	"os"
 	"strings"
 )
 
@@ -13,59 +10,7 @@ const (
 	squareMaybe   = ":yellow_square:"
 	squarePresent = ":green_square:"
 	squareNoGuess = ":blue_square:"
-
-	validAnswersFile = "valid_answers.txt"
-	validGuessesFile = "valid_guesses.txt"
-
-	// Based on the number of lines in each corresponding file
-	answersCount = 2315
-	guessesCount = 10657
 )
-
-var (
-	Sessions     = make(map[string]*EwegnSession)
-	ValidWords   = make(map[string]struct{}, answersCount+guessesCount)
-	ValidAnswers = make([]string, 0, answersCount)
-)
-
-func init() {
-	answersFile, err := os.Open(validAnswersFile)
-	if err != nil {
-		fmt.Println("ERROR: Failed to open answers file!", err)
-		panic(err)
-	}
-	defer answersFile.Close()
-
-	answersScanner := bufio.NewScanner(answersFile)
-	for answersScanner.Scan() {
-		ValidAnswers = append(ValidAnswers, answersScanner.Text())
-		ValidWords[answersScanner.Text()] = struct{}{}
-	}
-
-	err = answersScanner.Err()
-	if err != nil {
-		fmt.Println("ERROR: Failed to read answers file!", err)
-		panic(err)
-	}
-
-	guessesFile, err := os.Open(validGuessesFile)
-	if err != nil {
-		fmt.Println("ERROR: Failed to open guesses file!", err)
-		panic(err)
-	}
-	defer guessesFile.Close()
-
-	guessesScanner := bufio.NewScanner(guessesFile)
-	for guessesScanner.Scan() {
-		ValidWords[guessesScanner.Text()] = struct{}{}
-	}
-
-	err = guessesScanner.Err()
-	if err != nil {
-		fmt.Println("ERROR: Failed to read guesses file!", err)
-		panic(err)
-	}
-}
 
 type EwegnSession struct {
 	Owner       string     // ID of the user who is playing this session
