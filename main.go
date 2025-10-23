@@ -210,12 +210,11 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 
 		valid, reason := validateGuess(args[1])
-		guess := reason
-
 		if !valid {
 			send(reason)
 			return
 		}
+		guess := reason
 
 		if _, ok := ValidWords[guess]; !ok {
 			send("`" + guess + "` is not a valid word.")
